@@ -1,0 +1,1353 @@
+#stAuth v1.1
+
+# Feito por: Stoock
+# Made by: Stoock
+
+# Discord: stoock#5041
+
+options:
+
+	#Quantas contas um jogador pode ter pelo IP
+	#How many accounts a player can have per IP
+	contasip: 2
+	
+	#Os caracteres minimos para a senha
+	#The minimum characters for a password
+	mincaracteres: 5
+	
+	#Os caracteres máximos para a senha
+	#The maximum characters for a password
+	maxcaracteres: 16
+	
+
+	version: 1.1 # Não mude isto! / Dont change this!
+
+
+#Não é recomendado alterar nada a partir daqui.
+#Is not safe change anything starting from here.
+
+
+
+variables:
+	{tentativas.%player%::*} = "3"
+	
+on load:
+	clear {tempofaltante::*}
+	clear {captcha.errou::*}
+	clear {tempofaltantepin::*}
+	{stauth.language} is not "english" or "portuguese":
+		set {stauth.language} to "portuguese"
+		stop
+	{stauth.language} is not "english" or "portuguese":
+		set {stauth.language} to "portuguese"
+		wait 1 tick
+		send "&eO script estava sem nenhum idioma, então o idioma foi definido para Português." to console
+	set {_version} to line 1 from url "https://pastebin.com/raw/uVzySCW1"
+	set {_download} to line 2 from url "https://pastebin.com/raw/uVzySCW1"
+	if {_version} is not "{@version}":
+		{stauth.language} is "english":
+			send "" to console
+			send "&e A new version for &bstAuth &ehas been found." to console
+			send "&e You can download it in: &b%{_download}%" to console
+			send "&e More information: &fCurrent version: &7{@version} &8- &fFound version: &7%{_version}%" to console
+			send "" to console
+		{stauth.language} is "portuguese":
+			send "" to console
+			send "&e Uma nova versão para o &bstAuth &efoi encontrada." to console
+			send "&e Você pode baixá-la em: &b%{_download}%" to console
+			send "&e Mais informações: &fVersão atual: &7{@version} &8- &fVersão encontrada: &7%{_version}%" to console
+			send "" to console
+	stop
+
+on chat:
+	
+	{move.%player%} is "login" or "pin":
+		cancel event
+		{stauth.language} is "english":
+			send "&cIdentify yourself to can send messages."
+			stop
+		{stauth.language} is "portuguese":
+			send "&cIdentifique-se para utilizar o chat."
+			stop
+		
+	{register.%player%} is true:
+		cancel event
+		{stauth.language} is "english":
+			send "&cIdentify yourself to can send messages."
+			stop
+		{stauth.language} is "portuguese":
+			send "&cIdentifique-se para utilizar o chat."
+			stop
+
+on command:
+	
+	command is "registrar" or "register" or "logar" or "login" or "autenticar" or "captcha" or "pin":
+		stop
+		
+	{move.%player%} is "login" or "pin":
+		cancel event
+		{stauth.language} is "english":
+			send "&cIdentify yourself to can use commands."
+			stop
+		{stauth.language} is "portuguese":
+			send "&cIdentifique-se para utilizar comandos."
+			stop
+	
+	{register.%player%} is true:
+		cancel event
+		{stauth.language} is "english":
+			send "&cIdentify yourself to can use commands."
+			stop
+		{stauth.language} is "portuguese":
+			send "&cIdentifique-se para utilizar comandos."
+			stop
+		
+on join:
+	{captcha.errou::%player%} is set:
+		wait 3.3 ticks
+		{stauth.language} is "english":
+			kick player due to "&cFailed to sign in.%newline%%newline%&cYou missed the captcha.%newline%&cWait %{captcha.errou::%player%}% seconds to join again!"
+		{stauth.language} is "portuguese":
+			kick player due to "&cFalha ao entrar.%newline%%newline%&cVocê errou o captcha.%newline%&cAguarde %{captcha.errou::%player%}% segundos para entrar novamente!"
+		stop
+	{tempofaltante::%player%} is set:
+		wait 3.3 ticks
+		{stauth.language} is "english":
+			kick player due to "&cFailed to sign in.%newline%%newline%&cThe password is incorrenct.%newline%&cWait %{tempofaltante::%player%}% seconds to join again!"
+		{stauth.language} is "portuguese":
+			kick player due to "&cFalha ao entrar.%newline%%newline%&cA senha está incorreta.%newline%&cAguarde %{tempofaltante::%player%}% segundos para entrar novamente!"
+		stop
+	{tempofaltantepin::%player%} is set:
+		wait 3.3 ticks
+		{stauth.language} is "english":
+			kick player due to "&cFailed to sign in.%newline%%newline%&cThe PIN is incorrenct.%newline%&cWait %{tempofaltantepin::%player%}% seconds to join again!"
+		{stauth.language} is "portuguese":
+			kick player due to "&cFalha ao entrar.%newline%%newline%&cO PIN está incorreto.%newline%&cAguarde %{tempofaltantepin::%player%}% segundos para entrar novamente!"
+		stop
+	set {tentativas.%player%::*} to "3"
+
+on join:
+	wait 6 tick
+	set {lastloc.%player%} to player's location
+	{password.%player%} is set:
+		player's ip = {ip::%player%}:
+			{stauth.language} is "english":
+				send player title "&b&lIdentify yourself" with subtitle "&eRead the chat." for 30 seconds
+				set action bar of player to coloured "&aStep 1/2"
+			{stauth.language} is "portuguese":
+				send player title "&b&lIdentifique-se" with subtitle "&eLeia o bate-papo." for 30 seconds
+				set action bar of player to coloured "&aEtapa 1/2"
+			set {move.%player%} to "login"
+			set {login.%player%} to true
+			send ""
+			{stauth.language} is "english":
+				send "   &e&lAuthentication"
+				send "&aIdentify yourself using &7/login <password>&a."
+			{stauth.language} is "portuguese":
+				send "   &e&lAutenticação"
+				send "&aIdentifique-se com &7/logar <senha>&a."
+			send ""
+			wait 10 seconds
+			{login.%player%} is true:
+				send ""
+				{stauth.language} is "english":
+					send "   &e&lAuthentication"
+					send "&aIdentify yourself using &7/login <password>&a."
+				{stauth.language} is "portuguese":
+					send "   &e&lAutenticação"
+					send "&aIdentifique-se com &7/logar <senha>&a."
+				send ""
+				wait 10 seconds
+				{login.%player%} is true:
+					send ""
+					{stauth.language} is "english":
+						send "   &e&lAuthentication"
+						send "&aIdentify yourself using &7/login <password>&a."
+					{stauth.language} is "portuguese":
+						send "   &e&lAutenticação"
+						send "&aIdentifique-se com &7/logar <senha>&a."
+					send ""
+					wait 10 seconds
+					{login.%player%} is true:
+						{stauth.language} is "english":
+							kick player due to "&cYou did not identify yourself."
+						{stauth.language} is "portuguese":
+							kick player due to "&cVocê não se identificou"
+						stop
+					stop
+				stop
+			stop
+		{stauth.language} is "english":
+			send player title "&b&lIdentify yourself" with subtitle "&eRead the chat." for 30 seconds
+		{stauth.language} is "portuguese":
+			send player title "&b&lIdentifique-se" with subtitle "&eLeia o bate-papo." for 30 seconds
+		set {move.%player%} to "pin"
+		set {pinput.%player%} to true
+		send ""
+		{stauth.language} is "english":
+			send "&e * We saw that you entered with a different IP than the registered IP."
+			send "&e * Use /pin <account pin> to verify your identity."
+		{stauth.language} is "portuguese":
+			send "&e * Vimos que você entrou com um IP diferente do IP registrado."
+			send "&e * Utilize /pin <pin da conta> para confirmar sua identidade."
+		send ""
+		wait 10 seconds
+		{pinput.%player%} is true:
+			send ""
+			{stauth.language} is "english":
+				send "&e * We saw that you entered with a different IP than the registered IP."
+				send "&e * Use /pin <account pin> to verify your identity."
+			{stauth.language} is "portuguese":
+				send "&e * Vimos que você entrou com um IP diferente do IP registrado."
+				send "&e * Utilize /pin <pin da conta> para confirmar sua identidade."
+			send ""
+			wait 10 seconds
+			{pinput.%player%} is true:
+				send ""
+				{stauth.language} is "english":
+					send "&e * We saw that you entered with a different IP than the registered IP."
+					send "&e * Use /pin <account pin> to verify your identity."
+				{stauth.language} is "portuguese":
+					send "&e * Vimos que você entrou com um IP diferente do IP registrado."
+					send "&e * Utilize /pin <pin da conta> para confirmar sua identidade."
+				send ""
+				wait 10 seconds
+				{pinput.%player%} is true:
+					{stauth.language} is "english":
+						kick player due to "&cYou did not identify yourself."
+					{stauth.language} is "portuguese":
+						kick player due to "&cVocê não se identificou"
+					stop
+				stop
+			stop
+		stop
+	set {register.%player%} to true
+	{stauth.language} is "english":
+		send player title "&b&lRegister yourself" with subtitle "&eRead the chat." for 30 seconds
+		set action bar of player to coloured "&aStep 1/3"
+	{stauth.language} is "portuguese":
+		send player title "&b&lRegistre-se" with subtitle "&eLeia o bate-papo." for 30 seconds
+		set action bar of player to coloured "&aEtapa 1/3"
+	send ""
+	{stauth.language} is "english":
+		send "   &e&lAuthentication"
+		send "&aRegister yourself using &7/register <password> <password again>&a."
+	{stauth.language} is "portuguese":
+		send "   &e&lAutenticação"
+		send "&aRegistre-se com &7/registrar <senha> <senha denovo>&a."
+	send ""
+	{stauth.language} is "english":
+		send " &e* Tip: Do not use the same password from other places here."
+	{stauth.language} is "portuguese":
+		send " &e* Dica: Não utilize a mesma senha de outros lugares aqui."
+	send ""
+	wait 10 seconds
+	{register.%player%} is true:
+		send ""
+		{stauth.language} is "english":
+			send "   &e&lAuthentication"
+			send "&aRegister yourself using &7/register <password> <password again>&a."
+		{stauth.language} is "portuguese":
+			send "   &e&lAutenticação"
+			send "&aRegistre-se com &7/registrar <senha> <senha denovo>&a."
+		send ""
+		{stauth.language} is "english":
+			send " &e* Tip: Do not use the same password from other places here."
+		{stauth.language} is "portuguese":
+			send " &e* Dica: Não utilize a mesma senha de outros lugares aqui."
+		send ""
+		wait 10 seconds
+		{register.%player%} is true:
+			send ""
+			{stauth.language} is "english":
+				send "   &e&lAuthentication"
+				send "&aRegister yourself using &7/register <password> <password again>&a."
+			{stauth.language} is "portuguese":
+				send "   &e&lAutenticação"
+				send "&aRegistre-se com &7/registrar <senha> <senha denovo>&a."
+			send ""
+			{stauth.language} is "english":
+				send " &e* Tip: Do not use the same password from other places here."
+			{stauth.language} is "portuguese":
+				send " &e* Dica: Não utilize a mesma senha de outros lugares aqui."
+			send ""
+			wait 10 seconds
+			{register.%player%} is true:
+				kick player due to "&cYou have not registered."
+				stop
+	stop
+	
+on any movement:
+	{move.%player%} is "login" or "pin":
+		teleport player to {lastloc.%player%}
+	{register.%player%} is true:
+		teleport player to {lastloc.%player%}
+	
+
+
+command /register [<text>] [<text>]:
+	aliases: /registrar
+	trigger:
+		{register.%sender%} is true:
+			arg 1 is set:
+				arg 2 is set:
+					length of arg 1 >= {@mincaracteres}:
+						length of arg 1 <= {@maxcaracteres}:
+							arg 2 = arg 1:
+								set {ip::%player%} to player's ip
+								if {accounts.%{ip::%player%}%} is {@contasip}:
+									send ""
+									{stauth.language} is "english":
+										send "&cYou have exceeded the maximum account limit per IP."
+										send "&cAccount Limit: {@contasip} per IP"
+									{stauth.language} is "portuguese":
+										send "&cVocê excedeu o limite máximo de contas por IP."
+										send "&cLimite de contas: {@contasip} por IP"
+									send ""
+									stop
+								add 1 to {accounts.%{ip::%player%}%}
+								set {account.%{accounts.%{ip::%player%}%}%.%{ip::%player%}%} to "%player%"
+								add {account.%{accounts.%{ip::%player%}%}%.%{ip::%player%}%} to {ip::%player%}
+								set {password.%player%} to arg 1 hashed with SHA-256
+								clear {register.%player%}
+								set {move.%player%} to "pin"
+								{stauth.language} is "english":
+									send player title "&b&lREGISTER" with subtitle "&aYou have been registered successfully."
+								{stauth.language} is "portuguese":
+									send player title "&b&lREGISTRO" with subtitle "&aRegistro efetuado com sucesso."
+								send ""
+								{stauth.language} is "english":
+									send "&eYou have successfully registered."
+									send "&7Remember: Don't lose or tell your password to anyone."
+								{stauth.language} is "portuguese":
+									send "&eVocê se registrou com sucesso."
+									send "&7Lembre-se: Não perca ou conte sua senha para ninguém."
+								send ""
+								{stauth.language} is "english":
+									set action bar of player to coloured "&aGoing to the next step..."
+								{stauth.language} is "portuguese":
+									set action bar of player to coloured "&aIndo para a próxima etapa..."
+								wait 3.7 second
+								{stauth.language} is "english":
+									send player title "&b&lAdd a PIN" with subtitle "&eRead the chat." for 30 seconds
+								{stauth.language} is "portuguese":
+									send player title "&b&lAdicione um PIN" with subtitle "&eLeia o bate-papo." for 30 seconds
+								{stauth.language} is "english":
+									set action bar of player to coloured "&aStep 2/3"
+								{stauth.language} is "portuguese":
+									set action bar of player to coloured "&aEtapa 2/3"
+								send ""
+								{stauth.language} is "english":
+									send "&e * Now, you need to add a security PIN to your account."
+									send "&e * Do this using /pin <pin of six numbers>"
+								{stauth.language} is "portuguese":
+									send "&e * Agora, você precisa adicionar um PIN de segurança para sua conta."
+									send "&e * Faça isto utilizando /pin <pin de seis números>"
+								send ""
+								stop
+							{stauth.language} is "english":
+								send "&cThe passwords must be same."
+							{stauth.language} is "portuguese":
+								send "&cAs senhas precisam ser iguais."
+							stop
+						{stauth.language} is "english":
+							send "&cThe password must contain a maximum of {@maxcaracteres} characters."
+						{stauth.language} is "portuguese":
+							send "&cA senha precisa conter no máximo {@maxcaracteres} caracteres."
+						stop
+					{stauth.language} is "english":
+						send "&cThe password must contain a minimum of {@mincaracteres} characters."
+					{stauth.language} is "portuguese":
+						send "&cA senha precisa conter no mínimo {@mincaracteres} caracteres."
+					stop
+				{stauth.language} is "english":
+					send "&cYou need to enter your password twice to register yourself."
+				{stauth.language} is "portuguese":
+					send "&cVocê precisa colocar sua senha duas vezes para se registrar."
+				stop
+			{stauth.language} is "english":
+				send "&cYou need to enter your password twice to register yourself."
+			{stauth.language} is "portuguese":
+				send "&cVocê precisa colocar sua senha duas vezes para se registrar."
+			stop
+		{stauth.language} is "english":
+			send "&cYou are already registered on the server."
+		{stauth.language} is "portuguese":
+			send "&cVocê já é registrado no servidor."
+		stop
+
+command /login [<text>]:
+	aliases: /logar, /autenticar
+	trigger:
+		{register.%player%} is true:
+			send ""
+			{stauth.language} is "english":
+				send "&cYou are not registered yet."
+				send "&cRegister yourself using /register."
+			{stauth.language} is "portuguese":
+				send "&cVocê ainda não está registrado."
+				send "&cRegistre-se com /registrar."
+			send ""
+			stop
+		{password.%player%} is set:
+			{move.%player%} is "login":
+				arg 1 is set:
+					set {_arg1} to arg 1 hashed with SHA-256
+					{_arg1} = {password.%player%}:
+						{stauth.language} is "english":
+							send player title "&b&lIDENTIFICATION" with subtitle "&eThe password is correct."
+							set action bar of player to coloured "&aGoing to the next step..."
+						{stauth.language} is "portuguese":
+							send player title "&b&lIDENTIFICAÇÃO" with subtitle "&eA senha está correta."
+							set action bar of player to coloured "&aIndo para a próxima etapa..."
+						clear {login.%player%}
+						{stauth.language} is "english":
+							send "&eYou entered the correct password."
+						{stauth.language} is "portuguese":
+							send "&eVocê acertou a senha."
+						wait 2 second
+						{stauth.language} is "english":
+							send player title "&b&lCaptcha" with subtitle "&eRead the chat."
+						{stauth.language} is "portuguese":
+							send player title "&b&lCaptcha" with subtitle "&eLeia o bate-papo."
+						send ""
+						{stauth.language} is "english":
+							send "&e * In three seconds you will pass a captcha, so stay alert."
+						{stauth.language} is "portuguese":
+							send "&e * Em três segundos você irá passar por um captcha, então, fique atento."
+						send ""
+						{stauth.language} is "english":
+							set action bar of player to coloured "&aStep 2/2"
+						{stauth.language} is "portuguese":
+							set action bar of player to coloured "&aEtapa 2/2"
+						wait 3 seconds
+						set {st.captcha.%player%} to true
+						make player execute "captcha"
+						wait 2.1 tick
+						set {st.captcha.%player%} to false
+						stop
+					{tentativas.%player%::*} is "3":
+						{stauth.language} is "english":
+							set action bar of player to coloured "&cPassword Incorrect"
+							send "&cThe password is incorrenct. You have 2 more attempts"
+						{stauth.language} is "portuguese":
+							set action bar of player to coloured "&cSenha incorreta"
+							send "&cA senha está incorreta. Você tem mais 2 tentativas"
+						set {tentativas.%player%::*} to "2"
+						stop
+					{tentativas.%player%::*} is "2":
+						{stauth.language} is "english":
+							set action bar of player to coloured "&cPassword Incorrect"
+							send "&cThe password is incorrenct. You have 1 more attempt"
+						{stauth.language} is "portuguese":
+							set action bar of player to coloured "&cSenha incorreta"
+							send "&cA senha está incorreta. Você tem mais 1 tentativas"
+						set {tentativas.%player%::*} to "1"
+						stop
+					{tentativas.%player%::*} is "1":
+						set {tempofaltante::%player%} to "30"
+						{stauth.language} is "english":
+							kick player due to "&cThe password is incorrect. Try again in 30 seconds!"
+						{stauth.language} is "portuguese":
+							kick player due to "&cA senha está incorreta. Tente novamente em 30 segundos!"
+						wait 1 second
+						set {_seconds} to 29
+						loop 29 times:
+							wait 1 second
+							remove 1 from {_seconds}
+							set {tempofaltante::%player%} to "%{_seconds}%"
+						clear {tempofaltante::%player%}
+						stop
+					set {tempofaltante::%player%} to 30
+					{stauth.language} is "english":
+						kick player due to "&cThe password is incorrect. Try again in 30 seconds!"
+					{stauth.language} is "portuguese":
+						kick player due to "&cA senha está incorreta. Tente novamente em 30 segundos!"
+					wait 1 second
+					set {_seconds} to 29
+					loop 29 times:
+						wait 1 second
+						remove 1 from {_seconds}
+						set {tempofaltante::%player%} to "%{_seconds}%"
+					clear {tempofaltante::%player%}
+					stop
+				{stauth.language} is "english":
+					send "&cYou need to enter the password."
+				{stauth.language} is "portuguese":
+					send "&cVocê precisa colocar a sua senha."
+				stop
+			{move.%player%} is "pin":
+				{stauth.language} is "english":
+					send "&cYou need to enter the PIN."
+				{stauth.language} is "portuguese":
+					send "&cVocê precisa inserir seu PIN."
+				stop
+			{stauth.language} is "english":
+				send "&cYou are already logged in."
+			{stauth.language} is "portuguese":
+				send "&cVocê já está logado."
+			stop
+			
+command /unregister [<offlineplayer>] [<text>]:
+	aliases: /desregistrar
+	trigger:
+		player doesn't have permission "stauth.unregister" or "stauth.admin":
+			{stauth.language} is "english":
+				send "&eYou don't have permission to execute this command."
+				stop
+			{stauth.language} is "portuguese":
+				send "&cVocê não tem permissão para utilizar este comando."
+				stop
+			stop
+		arg 1 is set:
+			arg 2 is set:
+				arg 2 = arg 1:
+					{password.%arg 1%} is set:
+						clear {password.%arg 1%}
+						clear {pin.%arg 1%}
+						loop {accounts.%{ip::%arg 1%}%} times:
+							add 1 to {_deleting}
+							{account.%{_deleting}%.%{ip::%arg 1%}%} = "%arg 1%":
+								clear {account.%{_deleting}%.%{ip::%arg 1%}%}
+						set {accounts.%{ip::%arg 1%}%} to 0
+						send ""
+						{stauth.language} is "english":
+							send "&aThe player ""%arg 1%"" has been unregistered!"
+						{stauth.language} is "portuguese":
+							send "&aO jogador ""%arg 1%"" foi desregistrado!"
+						send ""
+						stop
+					clear {password.%arg 1%}
+					clear {pin.%arg 1%}
+					loop {accounts.%{ip::%arg 1%}%} times:
+						add 1 to {_deleting}
+						{account.%{_deleting}%.%{ip::%arg 1%}%} = "%arg 1%":
+							clear {account.%{_deleting}%.%{ip::%arg 1%}%}
+					set {accounts.%{ip::%arg 1%}%} to 0
+					{stauth.language} is "english":
+						send "&cThis name is not registered, but all records with the username ""%arg 1%"" have been deleted."
+					{stauth.language} is "portuguese":
+						send "&cEste jogador não está registrado, mas todos os registros com o username ""%arg 1%"" foram deletados."
+					stop
+				{stauth.language} is "english":
+					send "&cThe usernames must be same!"
+				{stauth.language} is "portuguese":
+					send "&cOs usernames precisam ser iguais!"
+				stop
+			{stauth.language} is "english":
+				send "&cYou must enter the username of the player who will be unregistered twice."
+			{stauth.language} is "portuguese":
+				send "&cVocê precisa colocar o username do jogador que será desregistrado duas vezes."
+			stop
+		send ""
+		{stauth.language} is "english":
+			send "&eHow to unregister anyone?"
+		{stauth.language} is "portuguese":
+			send "&eComo desregistrar alguém?"
+		send ""
+		{stauth.language} is "english":
+			send "&f/unregistrer &7[username] [username again]"
+			send "&eUnregister a player."
+		{stauth.language} is "portuguese":
+			send "&f/desregistrar &7[username] [username denovo]"
+			send "&eDesregistra alguém."
+		send ""
+		stop
+command /trocarsenha [<text>] [<text>]:
+	aliases: /changepass, /changepassword
+	trigger:
+		player doesn't have permission "stauth.changepass" or "stauth.admin":
+			{stauth.language} is "english":
+				send "&eYou don't have permission to execute this command."
+				stop
+			{stauth.language} is "portuguese":
+				send "&cVocê não tem permissão para utilizar este comando."
+				stop
+			stop
+		{password.%player%} is set:
+			arg 1 is set:
+				set {_arg1} to arg 1 hashed with SHA-256
+				{_arg1} = {password.%player%}:
+					arg 2 is set:
+						length of arg 2 >= {@mincaracteres}:
+							length of arg 2 <= {@maxcaracteres}:
+								set {_arg2} to arg 2 hashed with SHA-256
+								{_arg2} = {password.%player%}:
+									{stauth.language} is "english":
+										send "&cYou must enter a different password than the current one."
+									{stauth.language} is "portuguese":
+										send "&cVocê precisa colocar uma senha diferente da atual."
+									stop
+								set {password.%player%} to arg 2 hashed with SHA-256
+								{stauth.language} is "english":
+									send "&aYour password has been changed successfully."
+								{stauth.language} is "portuguese":
+									send "&aSua senha foi alterada com sucesso."
+								stop
+							{stauth.language} is "english":
+								send "&cThe new password must contain a maximum of {@maxcaracteres} characters."
+							{stauth.language} is "portuguese":
+								send "&cA nova senha precisa conter no máximo {@maxcaracteres} caracteres."
+							stop
+						{stauth.language} is "english":
+							send "&cThe new password must contain a minimum of {@mincaracteres} characters."
+						{stauth.language} is "portuguese":
+							send "&cA nova senha precisa conter no mínimo {@mincaracteres} caracteres."
+						stop
+					{stauth.language} is "english":
+						send "&cYou need to enter the new password."
+					{stauth.language} is "portuguese":
+						send "&cVocê precisa colocar a sua nova senha."
+					stop
+				{stauth.language} is "english":
+					send "&cThe current password is wrong."
+				{stauth.language} is "portuguese":
+					send "&cA senha atual está incorreta."
+				stop
+			{stauth.language} is "english":
+				send "&eTo change you password use: /changepassword <current password> <new password>"
+			{stauth.language} is "portuguese":
+				send "&ePara trocar a senha utilize: /trocarsenha <senha atual> <nova senha>"
+			stop		
+		{stauth.language} is "english":
+			send "&cYou are not registered yet."
+			send "&cRegister yourself using /register."
+		{stauth.language} is "portuguese":
+			send "&cVocê ainda não está registrado."
+			send "&cRegistre-se com /registrar."
+		stop
+command /contas [<offlineplayer>]:
+	aliases: /accounts
+	trigger:
+		arg 1 is set:
+			player doesn't have permission "stauth.accounts" or "stauth.admin":
+				{stauth.language} is "english":
+					send "&eYou don't have permission to execute this command."
+					stop
+				{stauth.language} is "portuguese":
+					send "&cVocê não tem permissão para utilizar este comando."
+					stop
+				stop
+			{accounts.%{ip::%arg 1%}%} is set:
+				send ""
+				{stauth.language} is "english":
+					send "&aAccounts of %arg 1% &7(IP %{ip::%arg 1%}%):"
+				{stauth.language} is "portuguese":
+					send "&aContas de %arg 1% &7(IP %{ip::%arg 1%}%):"
+				loop {accounts.%{ip::%arg 1%}%} times:
+					add 1 to {_num}
+					{stauth.language} is "english":
+						set {_msg.%{_num}%} to "&7Account N° %{_num}%: &f%{account.%{_num}%.%{ip::%arg 1%}%}%"
+					{stauth.language} is "portuguese":
+						set {_msg.%{_num}%} to "&7Conta N° %{_num}%: &f%{account.%{_num}%.%{ip::%arg 1%}%}%"
+					replace all "<none>" with "Nenhuma" in {_msg.%{_num}%}
+					send "%{_msg.%{_num}%}%"
+				send ""
+				{stauth.language} is "english":
+					send "&eMaximum accounts per IP: {@contasip}"
+				{stauth.language} is "portuguese":
+					send "&eMáximo de contas por IP: {@contasip}"
+				send ""
+				stop
+			{stauth.language} is "english":
+				send "&cThis player does not have any account."
+			{stauth.language} is "portuguese":
+				send "&cEste jogador não tem nenhuma conta."
+			stop
+		{stauth.language} is "english":
+			send "&cEnter the username of the player who you wish to see the accounts."
+		{stauth.language} is "portuguese":
+			send "&cColoque o username do jogador que você deseja ver as contas."
+		stop
+
+command /pin [<text>]:
+	trigger:
+		arg 1 is set:
+			{move.%player%} is "pin":
+				if {pin.%player%} is set:
+					if arg 1 = {pin.%player%}:
+						clear {pinput.%player%}
+						{stauth.language} is "english":
+							send player title "&b&lPIN" with subtitle "&aThe PIN is correct."
+						{stauth.language} is "portuguese":
+							send player title "&b&lPIN" with subtitle "&aO PIN está correto."
+						set {move.%player%} to "login"
+						set {login.%player%} to true
+						send ""
+						{stauth.language} is "english":
+							send "&eThe PIN is correct."
+						{stauth.language} is "portuguese":
+							send "&eO PIN está correto."
+						send ""
+						{stauth.language} is "english":
+							set action bar of player to coloured "&aWait..."
+						{stauth.language} is "portuguese":
+							set action bar of player to coloured "&aAguarde..."
+						wait 1 second
+						send ""
+						{stauth.language} is "english":
+							send "&aIdentify yourself using &7/login&a."
+						{stauth.language} is "portuguese":
+							send "&aIdentifique-se com &7/logar&a."
+						send ""
+						wait 10 seconds
+						{login.%player%} is true:
+							send ""
+							{stauth.language} is "english":
+								send "&aIdentify yourself using &7/login&a."
+							{stauth.language} is "portuguese":
+								send "&aIdentifique-se com &7/logar&a."
+							send ""
+							wait 10 seconds
+							{login.%player%} is true:
+								send ""
+								{stauth.language} is "english":
+									send "&aIdentify yourself using &7/login&a."
+								{stauth.language} is "portuguese":
+									send "&aIdentifique-se com &7/logar&a."
+								send ""
+								wait 10 seconds
+								{login.%player%} is true:
+									{stauth.language} is "english":
+										kick player due to "&cYou did not identify yourself."
+									{stauth.language} is "portuguese":
+										kick player due to "&cVocê não se identificou."
+									stop
+								stop
+							stop
+						stop
+					{stauth.language} is "english":
+						kick player due to "&cAuthentication failed.%newline%%newline%&cThe PIN is incorrect!%newline%&cWait 30 seconds to join again!"
+					{stauth.language} is "portuguese":
+						kick player due to "&cFalha na autenticação.%newline%%newline%&cO PIN está incorreto!%newline%&cAguarde 30 segundos para entrar novamente!"
+					set {tempofaltantepin::%player%} to "30"
+					wait 1 second
+					set {_seconds} to 29
+					loop 29 times:
+						wait 1 second
+						remove 1 from {_seconds}
+						set {tempofaltantepin::%player%} to "%{_seconds}%"
+					clear {tempofaltantepin::%player%}
+					stop
+			if {pin.%player%} is not set:
+				if arg 1 parsed as integer is set:
+					length of arg 1 = 6:
+						set {pin.%player%} to arg 1
+						send ""
+						{stauth.language} is "english":
+							send "&eYou defined your pin to: &l%arg 1%&e."
+							send "&eKeep this PIN in a safe place or don't forget it!"
+						{stauth.language} is "portuguese":
+							send "&eVocê definiu seu pin para: &l%arg 1%&e."
+							send "&eGuarde este PIN em um lugar seguro ou não esqueça ele!"
+						send ""
+						{stauth.language} is "english":
+							send player title "&b&lPIN" with subtitle "&aPIN defined successfully."
+							set action bar of player to coloured "&aGoing to the next step..."
+						{stauth.language} is "portuguese":
+							send player title "&b&lPIN" with subtitle "&aPIN definido com sucesso."
+							set action bar of player to coloured "&aIndo para a próxima etapa..."
+						wait 2 second
+						{stauth.language} is "english":
+							send player title "&b&lCaptcha" with subtitle "&eRead the chat."
+						{stauth.language} is "portuguese":
+							send player title "&b&lCaptcha" with subtitle "&eLeia o bate-papo."
+						send ""
+						{stauth.language} is "english":
+							send "&e * In three seconds you will pass a captcha, so stay alert."
+						{stauth.language} is "portuguese":
+							send "&e * Em três segundos você irá passar por um captcha, então, fique atento."
+						{stauth.language} is "english":
+							set action bar of player to coloured "&aStep 3/3"
+						{stauth.language} is "portuguese":
+							set action bar of player to coloured "&aEtapa 3/3"
+						wait 3 seconds
+						set {st.captcha.%player%} to true
+						make player execute "captcha"
+						wait 2.1 tick
+						set {st.captcha.%player%} to false
+						stop
+					send "&cO PIN precisa ter exatamente seis números."
+					stop
+				send "&cO pin precisa ter seis números, sem letras ou caracteres especiais."
+				stop
+			send "&cVocê não precisa usar o PIN agora."
+			stop
+		send "&cDigite o PIN."
+		stop
+
+command /stauth [<text>] [<text>]:
+	trigger:
+		player doesn't have permission "stauth.admin":
+			{stauth.language} is "english":
+				send "&eYou don't have permission to execute this command."
+				stop
+			{stauth.language} is "portuguese":
+				send "&cVocê não tem permissão para utilizar este comando."
+				stop
+			stop
+		arg 1 is set:
+			arg 1 is "reload" or "recarregar":
+				{stauth.language} is "english":
+					send "&aReloading stAuth..."
+					make console execute "sk reload stAuth"
+					send "&astAuth reloaded successfully."
+				{stauth.language} is "portuguese":
+					send "&aRecarregando o stAuth..."
+					make console execute "sk reload stAuth"
+					send "&astAuth recarregado com sucesso."
+				stop
+			arg 1 is "idioma" or "language":
+				arg 2 is "english" or "ingles" or "inglês":
+					set {stauth.language} to "english"
+					send "&eLanguage changed to English successfully."
+					stop
+				arg 2 is "portuguese" or "portugues" or "português":
+					set {stauth.language} to "portuguese"
+					send "&eIdioma alterado para Português com sucesso."
+					stop
+				{stauth.language} is "english":
+					send "&eAvailable languages: English, Portuguese"
+					send "&eMore languages are being created for new versions of the script."
+				{stauth.language} is "portuguese":
+					send "&eIdiomas disponíveis: &7Inglês, Português"
+					send "&eMais idiomas estão sendo criados, para novas versões do script."
+				stop
+			arg 1 is "check" or "checar":
+				{stauth.language} is "english":
+					send "&aLooking for updates to stAuth..."
+				{stauth.language} is "portuguese":
+					send "&aProcurando atualizações para o stAuth..."
+				set {_version} to line 1 from url "https://pastebin.com/raw/uVzySCW1"
+				set {_download} to line 2 from url "https://pastebin.com/raw/uVzySCW1"
+				if {_version} is not "{@version}":
+					{stauth.language} is "english":
+						send ""
+						send "&e A new version for &bstAuth &ehas been found."
+						send "&e You can download it in: &b%{_download}%"
+						send "&e More information: &fCurrent version: &7{@version} &8- &fFound version: &7%{_version}%"
+						send ""
+					{stauth.language} is "portuguese":
+						send ""
+						send "&e Uma nova versão para o &bstAuth &efoi encontrada."
+						send "&e Você pode baixá-la em: &b%{_download}%"
+						send "&e Mais informações: &fVersão atual: &7{@version} &8- &fVersão encontrada: &7%{_version}%"
+						send ""
+					stop
+				{stauth.language} is "english":
+					send "&aYou are using the current version of stAuth &7(v{@version})&a."
+				{stauth.language} is "portuguese":
+					send "&aVocê está utilizando a versão atual do stAuth &7(v{@version})&a."
+				stop
+			arg 1 is "atualizar" or "update":
+				{stauth.language} is "english":
+					send "&aUpdating the stAuth..."
+				{stauth.language} is "portuguese":
+					send "&aAtualizando o stAuth..."
+				set {_version} to line 1 from url "https://pastebin.com/raw/uVzySCW1"
+				set {_download} to line 3 from url "https://pastebin.com/raw/uVzySCW1"
+				if {_version} is not "{@version}":
+					delete file "plugins/Skript/scripts/stAuth.sk"
+					download file from "%{_download}%" to file "plugins/Skript/scripts/stAuth.sk"
+					{stauth.language} is "english":
+						send "&astAuth has been updated."
+					{stauth.language} is "portuguese":
+						send "&astAuth atualizado com sucesso."
+					stop
+				{stauth.language} is "english":
+					send "&aYou are already using the current version of stAuth."
+				{stauth.language} is "portuguese":
+					send "&aVocê já está utilizando a versão atual do stAuth."
+				stop
+			arg 1 is "install" or "instalar":
+				{stauth.language} is "english":
+					send "&aThe stAuth is already installed."
+				{stauth.language} is "portuguese":
+					send "&aO stAuth já está instalado."
+				stop
+		{stauth.language} is "english":
+			send ""
+			send "&estAuth"
+			send "&eCreator's Discord: &bstoock##5041"
+			send ""
+			send "&eChange the script language: &7/stauth language <english/portuguese>"
+			send "&eReload the script: &7/stauth reload"
+			send "&eCheck for a new update to the script: &7/stauth check"
+			send ""
+		{stauth.language} is "portuguese":
+			send ""
+			send "&estAuth"
+			send "&eDiscord do Criador: &bstoock##5041"
+			send ""
+			send "&eAlterar o idioma do script: &7/stauth idioma <inglês/português>"
+			send "&eRecarregar o script: &7/stauth recarregar"
+			send "&eChecar se há uma nova atualização para o script: &7/stauth checar"
+			send ""
+		stop
+		
+
+on inventory close:
+	{captcha.fazendo.%player%} is true:
+		set {st.captcha.%player%} to false
+		set {captcha.fazendo.%player%} to false
+		set {move.%player%} to false
+		set {captcha.errou::%player%} to "30"
+		{stauth.language} is "english":
+			kick player due to "&cAuthentication failed.%newline%%newline%&cYou closed the captcha.%newline%&cWait 30 seconds to join again!"
+		{stauth.language} is "portuguese":
+			kick player due to "&cFalha na autenticação.%newline%%newline%&cVocê fechou o captcha.%newline%&cAguarde 30 segundos para entrar novamente!"
+		wait 1 second
+		set {_seconds} to 29
+		loop 29 times:
+			wait 1 second
+			remove 1 from {_seconds}
+			set {captcha.errou::%player%} to "%{_seconds}%"
+		clear {captcha.errou::%player%}
+		stop
+		
+command /captcha [<text>]:
+	trigger:
+		set {move.%player%} to false
+		arg 1 is set:
+			arg 1 is "certo":
+				{captcha.fazendo.%player%} is true:
+					set {st.captcha.%player%} to false
+					set {captcha.fazendo.%player%} to false
+					set {move.%player%} to false
+					wait 1 tick
+					close player's inventory
+					{stauth.language} is "english":
+						send player title "&b&lCaptcha" with subtitle "&aYou hit the captcha."
+						set action bar of player to coloured "&aWelcome!"
+					{stauth.language} is "portuguese":
+						send player title "&b&lCaptcha" with subtitle "&aVocê acertou o captcha."
+						set action bar of player to coloured "&aBem vindo!"
+					send ""
+					{stauth.language} is "english":
+						send "&aCaptcha correct!"
+						send "&aYou have successfully authenticated yourself."
+					{stauth.language} is "portuguese":
+						send "&aCaptcha correto!"
+						send "&aVocê se autenticou com sucesso."
+					send ""
+					wait 2 seconds
+					player has permission "stauth.admin":
+						set {_version} to line 1 from url "https://pastebin.com/raw/uVzySCW1"
+						set {_download} to line 2 from url "https://pastebin.com/raw/uVzySCW1"
+						if {_version} is not "{@version}":
+							play "NOTE_PLING" to player at volume 1
+							{stauth.language} is "english":
+								send ""
+								send "&e A new version for &bstAuth &ehas been found."
+								send "&e You can download it in: &b%{_download}%"
+								send "&e More information: &fCurrent version: &7{@version} &8- &fFound version: &7%{_version}%"
+								send ""
+							{stauth.language} is "portuguese":
+								send ""
+								send "&e Uma nova versão para o &bstAuth &efoi encontrada."
+								send "&e Você pode baixá-la em: &b%{_download}%"
+								send "&e Mais informações: &fVersão atual: &7{@version} &8- &fVersão encontrada: &7%{_version}%"
+								send ""
+						stop
+					stop
+			arg 1 is "errado":
+				{captcha.fazendo.%player%} is true:
+					set {st.captcha.%player%} to false
+					set {captcha.fazendo.%player%} to false
+					set {move.%player%} to false
+					set {captcha.errou::%player%} to "30"
+					{stauth.language} is "english":
+						kick player due to "&cFailed to sign in.%newline%%newline%&cYou missed the captcha.%newline%&cWait %{captcha.errou::%player%}% seconds to join again!"
+					{stauth.language} is "portuguese":
+						kick player due to "&cFalha ao entrar.%newline%%newline%&cVocê errou o captcha.%newline%&cAguarde %{captcha.errou::%player%}% segundos para entrar novamente!"
+					wait 1 second
+					set {_seconds} to 29
+					loop 29 times:
+						wait 1 second
+						remove 1 from {_seconds}
+						set {captcha.errou::%player%} to "%{_seconds}%"
+					clear {captcha.errou::%player%}
+					stop
+		{st.captcha.%player%} is true:
+			set {captcha.fazendo.%player%} to true
+			chance of 50%:
+				chance of 20%:
+					{stauth.language} is "english":
+						open chest with 5 row named "&aClick in the &lBow&a." to player
+						format slot 7 of player with grass named "&aGrass" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with stone sword named "&aStone Sword" to close then run [make player execute command "captcha errado"]
+						format slot 23 of player with flint and steel named "&aFlint and Steel" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with leather chestplate named "&aLeather Tunic" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with bow named "&aBow" to close then run [make player execute command "captcha certo"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 5 row named "&aClique no &lArco&a." to player
+						format slot 7 of player with grass named "&aGrama" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with stone sword named "&aEspada de Pedra" to close then run [make player execute command "captcha errado"]
+						format slot 23 of player with flint and steel named "&aIsqueiro" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with leather chestplate named "&aPeitoral de Couro" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with bow named "&aArco" to close then run [make player execute command "captcha certo"]
+					stop
+				chance of 20%:
+					{stauth.language} is "english":
+						open chest with 5 row named "&aClick in the &lGrass&a." to player
+						format slot 11 of player with grass named "&aGrass" to close then run [make player execute command "captcha certo"]
+						format slot 23 of player with stone sword named "&aStone Sword" to close then run [make player execute command "captcha errado"]
+						format slot 7 of player with flint and steel named "&aFlint and Steel" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with leather chestplate named "&aLeather Tunic" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with bow named "&aBow" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 5 row named "&aClique na &lGrama&a." to player
+						format slot 11 of player with grass named "&aGrama" to close then run [make player execute command "captcha certo"]
+						format slot 23 of player with stone sword named "&aEspada de Pedra" to close then run [make player execute command "captcha errado"]
+						format slot 7 of player with flint and steel named "&aIsqueiro" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with leather chestplate named "&aPeitoral de Couro" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with bow named "&aArco" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 20%:
+					{stauth.language} is "english":
+						open chest with 5 row named "&aClick in the &lStone Sword&a." to player
+						format slot 36 of player with grass named "&aGrass" to close then run [make player execute command "captcha errado"]
+						format slot 7 of player with stone sword named "&aStone Sword" to close then run [make player execute command "captcha certo"]
+						format slot 22 of player with flint and steel named "&aFlint and Steel" to close then run [make player execute command "captcha errado"]
+						format slot 17 of player with leather chestplate named "&aLeather Tunic" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with bow named "&aBow" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 5 row named "&aClique no &lEspada de Pedra&a." to player
+						format slot 36 of player with grass named "&aGrama" to close then run [make player execute command "captcha errado"]
+						format slot 7 of player with stone sword named "&aEspada de Pedra" to close then run [make player execute command "captcha certo"]
+						format slot 22 of player with flint and steel named "&aIsqueiro" to close then run [make player execute command "captcha errado"]
+						format slot 17 of player with leather chestplate named "&aPeitoral de Couro" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with bow named "&aArco" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 20%:
+					{stauth.language} is "english":
+						open chest with 5 row named "&aClick in the &lLeather Tunic&a." to player
+						format slot 16 of player with grass named "&aGrass" to close then run "c"
+						format slot 30 of player with stone sword named "&aStone Sword" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with flint and steel named "&aFlint and Steel" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with leather chestplate named "&aLeather Tunic" to close then run [make player execute command "captcha certo"]
+						format slot 23 of player with bow named "&aBow" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 5 row named "&aClique no &lPeitoral de Couro&a." to player
+						format slot 16 of player with grass named "&aGrama" to close then run "c"
+						format slot 30 of player with stone sword named "&aEspada de Pedra" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with flint and steel named "&aIsqueiro" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with leather chestplate named "&aPeitoral de Couro" to close then run [make player execute command "captcha certo"]
+						format slot 23 of player with bow named "&aArco" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 20%:
+					{stauth.language} is "english":
+						open chest with 5 row named "&aClick in the &lFlint and Steel&a." to player
+						format slot 30 of player with grass named "&aGrass" to close then run [make player execute command "captcha errado"]
+						format slot 23 of player with stone sword named "&aStone Sword" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with flint and steel named "&aFlint and Steel" to close then run [make player execute command "captcha certo"]
+						format slot 7 of player with leather chestplate named "&aLeather Tunic" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with bow named "&aBow" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 5 row named "&aClique no &lIsqueiro&a." to player
+						format slot 30 of player with grass named "&aGrama" to close then run [make player execute command "captcha errado"]
+						format slot 23 of player with stone sword named "&aEspada de Pedra" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with flint and steel named "&aIsqueiro" to close then run [make player execute command "captcha certo"]
+						format slot 7 of player with leather chestplate named "&aPeitoral de Couro" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with bow named "&aArco" to close then run [make player execute command "captcha errado"]
+					stop
+				else:
+					set {st.captcha.%player%} to true
+					make player execute "captcha"
+					wait 2.1 tick
+					set {st.captcha.%player%} to false
+					stop
+			chance of 50%:
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &4&lRed&a glass." to player
+						format slot 6 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha certo"]
+						format slot 30 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &4&lVermelho&a." to player
+						format slot 6 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 36 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha certo"]
+						format slot 30 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &d&lPink&a glass." to player
+						format slot 6 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha certo"]
+						format slot 11 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &d&lRosa&a." to player
+						format slot 6 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha certo"]
+						format slot 11 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &1&lBlue&a glass." to player
+						format slot 34 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha certo"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 6 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &1&lAzul&a." to player
+						format slot 34 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha certo"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 6 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &0&lBlack&a glass." to player
+						format slot 6 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha certo"]
+						format slot 19 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &0&lPreto&a." to player
+						format slot 6 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha certo"]
+						format slot 19 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &6&lOrange&a glass." to player
+						format slot 46 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha certo"]
+						format slot 26 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 6 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &6&lLaranja&a." to player
+						format slot 46 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha certo"]
+						format slot 26 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 6 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &a&lGreen&a glass." to player
+						format slot 6 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha certo"]
+						format slot 34 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &a&lVerde&a." to player
+						format slot 6 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha certo"]
+						format slot 34 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &b&lCyan&a glass." to player
+						format slot 6 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha certo"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &b&lCiano&a." to player
+						format slot 6 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha certo"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &f&lWhite&a glass." to player
+						format slot 6 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha certo"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &f&lBranco&a." to player
+						format slot 6 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha certo"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &e&lYellow&a glass." to player
+						format slot 11 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 6 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha certo"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha errado"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &e&lAmarelo&a." to player
+						format slot 11 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 6 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha certo"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha errado"]
+					stop
+				chance of 10%:
+					{stauth.language} is "english":
+						open chest with 6 row named "&aClick in the &5&lPurple&a glass." to player
+						format slot 6 of player with pink stained glass named "&dPink" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Blue" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Black" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Orange" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Red" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aGreen" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCyan" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fWhite" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eYellow" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Purple" to close then run [make player execute command "captcha certo"]
+						stop
+					{stauth.language} is "portuguese":
+						open chest with 6 row named "&aClique no vidro &5&lRoxo&a." to player
+						format slot 6 of player with pink stained glass named "&dRosa" to close then run [make player execute command "captcha errado"]
+						format slot 11 of player with blue stained glass named "&1Azul" to close then run [make player execute command "captcha errado"]
+						format slot 14 of player with black stained glass named "&0Preto" to close then run [make player execute command "captcha errado"]
+						format slot 19 of player with orange stained glass named "&6Laranja" to close then run [make player execute command "captcha errado"]
+						format slot 26 of player with red stained glass named "&4Vermelho" to close then run [make player execute command "captcha errado"]
+						format slot 30 of player with light green stained glass named "&aVerde" to close then run [make player execute command "captcha errado"]
+						format slot 34 of player with light blue stained glass named "&bCiano" to close then run [make player execute command "captcha errado"]
+						format slot 39 of player with white stained glass named "&fBranco" to close then run [make player execute command "captcha errado"]
+						format slot 43 of player with yellow stained glass named "&eAmarelo" to close then run [make player execute command "captcha errado"]
+						format slot 46 of player with purple stained glass named "&5Roxo" to close then run [make player execute command "captcha certo"]
+					stop
+				else:
+					set {st.captcha.%player%} to true
+					make player execute "captcha"
+					wait 2.1 tick
+					set {st.captcha.%player%} to false
+					stop
+			else:
+				set {st.captcha.%player%} to true
+				make player execute "captcha"
+				wait 2.1 tick
+				set {st.captcha.%player%} to false
+				stop
+			stop
+		{stauth.language} is "english":
+			send "Unknown command."
+		{stauth.language} is "portuguese":
+			send "&eComando não encontrado."
+		stop

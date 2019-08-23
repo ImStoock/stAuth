@@ -1,0 +1,62 @@
+#stAuth v1.1
+
+on load:
+	add 1 to {stauth.installnumber}
+
+command /stauth [<text>] [<text>]:
+	trigger:
+		player doesn't have permission "stauth.admin":
+			send "&cVocê não tem permissão para utilizar este comando."
+			stop
+		arg 1 is set:
+			arg 1 is "reload" or "recarregar":
+				send "&aRecarregando o stAuth..."
+				make console execute "sk reload stAuth"
+				send "&aO stAuth foi recarregado com sucesso."
+				stop
+			arg 1 is "intall" or "instalar":
+				{stauth.installed.%{stauth.installnumber}%} is true:
+					send "&aO stAuth já está instalado, porém você precisa utilizar &b/stauth recarregar &apara ele começar a funcionar."
+					stop
+				{stauth.readytoinstall} is true:
+					clear {stauth.readytoinstall}
+					set {stauth.installed.%{stauth.installnumber}%} to true
+					send "&aInstalando o stAuth..."
+					set {_download} to line 3 from url "https://pastebin.com/raw/uVzySCW1"
+					delete file "plugins/Skript/scripts/stAuth.sk"
+					download file from "%{_download}%" to file "plugins/Skript/scripts/stAuth.sk"
+					send "&astAuth instalado com sucesso."
+					send "&aVocê precisa utilizar &b/stauth recarregar &apara o script começar a funcionar."
+					stop
+				set {stauth.readytoinstall} to true
+				send ""
+				send "&e * Você está prestes a instalar o stAuth, mas primeiro:"
+				send "&e * Certifique-se que o servidor contém todos os seguintes plugins"
+				send ""
+				send "&a&lSkript: &aVersões testadas: v2.1.2, 2.2-dev36, 2.2-dev37c"
+				send "&a&l| &aVersão recomendada: &l2.2-dev36"
+				send ""
+				send "&a&lSkQuery: &aVersões funcionais: v3.5.9a-Lime, v3.6.0-Lime, v3.6.1-Lime"
+				send "&a&l| &aVersão recomendada: &lv3.6.1-Lime"
+				send ""
+				send "&a&lskRayFall: &aVersões testadas: v1.9.14, v1.9.17"
+				send "&a&l| &aVersão recomendada: &lv1.9.17"
+				send ""
+				send "&a&lskUtilites: &aVersões funcionais: v0.9.2"
+				send "&a&l| &aVersão recomendada: &lv0.9.2"
+				send ""
+				send "&e * Caso tenha todos os plugins, utilize &b/stauth instalar &enovamente para instalar o stAuth."
+				send "&e * Em 30 segundos esta ação será cancelada."
+				send ""
+				wait 30 seconds
+				{stauth.readytoinstall} is true:
+					set {stauth.readytoinstall} to false
+					send "&cAção de instalar o stAuth cancelada."
+				stop
+		send ""
+		send "&estAuth"
+		send "&eDiscord do Criador: &bstoock##5041"
+		send ""
+		send "&eInstalar o stAuth: &7/stauth instalar"
+		send ""
+		stop
